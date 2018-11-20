@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,height=device-height,initial-scale=1.0"/>
+  <title>CabVault</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap-theme.min.css">
+
+  <!-- latest bootstrap-switch release -->
+  <link rel="stylesheet" href="https://rawgit.com/nostalgiaz/bootstrap-switch/master/dist/css/bootstrap3/bootstrap-switch.css">
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+
+  <!-- latest bootstrap-switch release -->
+  <script src="https://rawgit.com/nostalgiaz/bootstrap-switch/master/dist/js/bootstrap-switch.js"></script>
+
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.15/angular.min.js"></script>
+  <script src="https://rawgit.com/frapontillo/angular-bootstrap-switch/develop/common/module.js"></script>
+  <script src="https://rawgit.com/frapontillo/angular-bootstrap-switch/develop/src/directives/bsSwitch.js"></script>
+  <!-- cabvault app -->
+  <script>
+      var myApp = angular.module('cabVault', ['frapontillo.bootstrap-switch']);
+      myApp
+      .directive('emitChange', function() {
+        return function(scope, elem, attr) {
+          elem.on('switchChange.bootstrapSwitch', function (e) {
+            scope.$emit('switchChanged', e.target.checked, attr.emitChange);
+          })
+        }
+      });
+      myApp.controller('SwitchController', ['$scope','$http',
+        function($scope, $http) {
+          $scope.names = [];
+          $scope.name = {};
+          $scope.comments = [];
+          $scope.comment = {};
+          $scope.active = true;
+          $scope.init = function () {
+            $http.get("http://localhost:3000/api")
+              .then(function successCallback(response) {
+                var todos = response.data.todos;
+                for (var n in todos) {
+                  $scope.names.push(todos[n].name);
+                  $scope.comments.push(todos[n].comments);
+                }
+                angular.forEach(todos, function(k,i) { 
+                  $scope.name[k.name] = k.pickUp;
+                  $scope.comment[k.name] = k.comments;
+                });
+              });
+          };
+          $scope.handleSubmit = function(cmt, name) {
+            console.log(cmt + ' ' + name);
+            $scope.$emit('commentEntered', cmt, name);
+          };
+          $scope.$on('switchChanged', function(scope, val, name)
+          {
+            angular.element('#log').val(name + ': ' + val)
+            var data = 'pickUp=' + val;
+            var header = {
+              'Content-Type': 'application/x-www-form-urlencoded'
+            };
+            $http.put('/api/'+name, data, {
+              headers: header
+            }).success(function(data, status) {
+              $("#tick_"+name).show().delay(2000).fadeOut();
+            });
+          });
+          $scope.$on('commentEntered', function(scope, comm, name) {
+            var data = 'comments=' + comm;
+            var header = {
+              'Content-Type': 'application/x-www-form-urlencoded'
+            };
+            $http.put('/api/'+name, data, {
+              headers: header
+            }).success(function(data, status) {
+              $("#tick_"+name).show().delay(2000).fadeOut();
+            });
+          })
+        }
+      ]);
+    </script>
+</head>
+<body ng-app="cabVault">
+  <div class="container-fluid">
+    <h2 class="text-center">Pick-Up portal</h2>
+    <div ng-controller="SwitchController" ng-init="init()">
+      <table class="table table-hover">
+        <thead class="thead-dark">
+          <tr>
+            <th scope="col">Name</th>
+            <th scope="col">Comment</th>
+            <th scope="col"></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr ng-repeat="c in names">
+            <td>
+                <input id="check_{{ c }}"
+                       bs-switch
+                       emit-change="{{ c }}"
+                       ng-model="name[c]"
+                       switch-on-text="{{ c }}"
+                       switch-off-text="{{ c }}"
+                       switch-on-color="success"
+                       switch-off-color="danger"
+                       switch-active="{{ active }}"
+                       type="checkbox">
+            </td>
+            <td>
+                <input type="text" ng-keyup="$event.keyCode == 13 ? handleSubmit(cmt, c) : null" ng-model="cmt" class="form-control" ng-init="cmt=comment[c]" id="usr">
+            </td>
+            <td>
+                <p style="display: none" id="tick_{{ c }}">&#9989; </p>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</body>
+
+</html>
