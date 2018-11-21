@@ -27,9 +27,9 @@ app.use(express.static(path.join(__dirname, 'public')));
 const port = process.env.PORT || 3000;
 // connect to database
 mongoose.Promise = global.Promise;
-mongoose.connect('mongodb://localhost/mern-todo-app', {
+mongoose.connect('mongodb+srv://root:Builder!12@mern-todo-app-lvcf7.azure.mongodb.net/mern-todo-app?retryWrites=true', {
     useNewUrlParser: true,
-});
+}); //mongodb://root:<PASSWORD>@mern-todo-app-shard-00-00-lvcf7.azure.mongodb.net:27017,mern-todo-app-shard-00-01-lvcf7.azure.mongodb.net:27017,mern-todo-app-shard-00-02-lvcf7.azure.mongodb.net:27017/test?ssl=true&replicaSet=mern-todo-app-shard-0&authSource=admin&retryWrites=true
 // add Source Map Support
 SourceMapSupport.install();
 app.use('/api', todoRoutes);
