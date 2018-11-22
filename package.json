@@ -4,7 +4,7 @@
   "description": "",
   "main": "app.js",
   "scripts": {
-    "start": "nodemon app_hooked.js",
+    "start": "node app_hooked.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
@@ -17,7 +17,6 @@
     "mongoose": "^5.3.12",
     "morgan": "^1.9.1",
     "node-schedule": "^1.3.0",
-    "nodemon": "^1.18.6",
     "source-map-support": "^0.5.9"
   },
   "devDependencies": {
